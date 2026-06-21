@@ -1259,52 +1259,46 @@ h2 {
 
 
 
-/* Modo Cinema estável:
-   não move o iframe do YouTube no DOM; apenas amplia o mesmo player com CSS.
-   Isto evita o erro "An error occurred. Please try again later. Playback ID..." */
+
+
+/* Modo Cinema centrado e estável:
+   O iframe do YouTube NÃO é movido no DOM.
+   O player original é ampliado e centrado no viewport. */
 body.cinema-mode {
   overflow: hidden;
 }
 
 body.cinema-mode .cinema-overlay {
   display: grid !important;
+  place-items: center;
   pointer-events: auto;
+  padding: 0;
 }
 
 body.cinema-mode .cinema-card {
-  width: min(1180px, calc(100vw - 32px));
-  min-height: min(820px, calc(100vh - 80px));
-  padding-top: min(58vw, 680px);
-  position: relative;
-}
-
-body.cinema-mode .video-shell {
   position: fixed;
-  z-index: 80;
-  left: 50%;
-  top: 48%;
-  width: min(1120px, calc(100vw - 48px)) !important;
-  height: auto !important;
-  aspect-ratio: 16 / 9;
-  transform: translate(-50%, -50%);
-  border-radius: 26px;
-  box-shadow: 0 40px 160px rgba(0, 0, 0, 0.72);
-  background: #050507;
-}
-
-body.cinema-mode #youtube-player,
-body.cinema-mode #youtube-player iframe {
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: 26px;
-}
-
-body.cinema-mode .video-placeholder {
-  border-radius: 26px;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 body.cinema-mode .footer-player {
+  position: fixed;
+  inset: 0;
   z-index: 81;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  transform: none;
+  display: block;
+  padding: 0;
   pointer-events: none;
   background: transparent;
   border-color: transparent;
@@ -1317,11 +1311,55 @@ body.cinema-mode .footer-player > *:not(.video-shell) {
   pointer-events: none;
 }
 
+body.cinema-mode .video-shell {
+  position: fixed !important;
+  z-index: 85;
+  left: 50% !important;
+  top: 50% !important;
+  width: min(1120px, calc(100vw - 48px)) !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  overflow: hidden;
+  border-radius: 28px;
+  box-shadow: 0 42px 170px rgba(0, 0, 0, 0.78);
+  background: #050507;
+  pointer-events: auto;
+}
+
+body.cinema-mode #youtube-player,
+body.cinema-mode #youtube-player iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+  border-radius: 28px;
+  display: block;
+}
+
+body.cinema-mode .video-placeholder {
+  border-radius: 28px;
+}
+
 body.cinema-mode .cinema-info {
-  position: relative;
-  z-index: 82;
-  margin-top: 18px;
+  position: fixed;
+  z-index: 86;
+  left: 50%;
+  bottom: 28px;
+  width: min(900px, calc(100vw - 40px));
+  transform: translateX(-50%);
+  margin: 0;
   text-align: center;
+  pointer-events: none;
+}
+
+body.cinema-mode .cinema-info h2 {
+  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
+}
+
+body.cinema-mode .cinema-info p {
+  color: rgba(255, 248, 230, 0.76);
+  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
 }
 
 body.cinema-mode .cinema-close {
@@ -1329,13 +1367,8 @@ body.cinema-mode .cinema-close {
 }
 
 @media (max-width: 780px) {
-  body.cinema-mode .cinema-card {
-    padding-top: min(65vw, 360px);
-  }
-
   body.cinema-mode .video-shell {
-    width: calc(100vw - 20px) !important;
-    top: 45%;
+    width: calc(100vw - 18px) !important;
     border-radius: 18px;
   }
 
@@ -1343,5 +1376,19 @@ body.cinema-mode .cinema-close {
   body.cinema-mode #youtube-player iframe,
   body.cinema-mode .video-placeholder {
     border-radius: 18px;
+  }
+
+  body.cinema-mode .cinema-info {
+    bottom: 18px;
+  }
+}
+
+@media (max-height: 620px) {
+  body.cinema-mode .video-shell {
+    width: min(860px, calc(100vw - 48px)) !important;
+  }
+
+  body.cinema-mode .cinema-info {
+    display: none;
   }
 }
