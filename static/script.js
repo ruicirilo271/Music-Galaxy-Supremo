@@ -67,6 +67,7 @@ const el = {
   nowArtist: document.getElementById("nowArtist"),
   nowYoutube: document.getElementById("nowYoutube"),
   videoPlaceholder: document.getElementById("videoPlaceholder"),
+  videoHome: document.querySelector(".video-shell"),
   footerPlayer: document.getElementById("footerPlayer"),
 
   prevBtn: document.getElementById("prevBtn"),
@@ -510,6 +511,15 @@ function loadCurrentCandidate() {
   el.nowYoutube.textContent = `${candidate.title} · ${candidate.channelTitle}`;
   el.cinemaTitle.textContent = state.queue[state.queueIndex]?.trackName || candidate.title;
   el.cinemaSubtitle.textContent = `${candidate.title} · ${candidate.channelTitle}`;
+
+  if (state.cinemaActive) {
+    const playerNode = document.getElementById("youtube-player");
+    const mount = document.getElementById("cinemaVideoMount");
+    if (playerNode && mount && playerNode.parentElement !== mount) {
+      mount.innerHTML = "";
+      mount.appendChild(playerNode);
+    }
+  }
 
   if (state.youtubeReady && state.youtubePlayer?.loadVideoById) {
     state.youtubePlayer.loadVideoById(candidate.videoId);
@@ -1047,14 +1057,77 @@ function renderVideosDrawer() {
 }
 
 function openCinema() {
+  const playerNode = document.getElementById("youtube-player");
+
+  if (!playerNode || !state.youtubeReady) {
+    showMessage("O player ainda não está pronto. Escolhe primeiro uma música.", "warn");
+    return;
+  }
+
+  if (!state.queue[state.queueIndex] && !state.currentCandidates.length) {
+    showMessage("Escolhe primeiro uma música para abrir o modo cinema.", "warn");
+    return;
+  }
+
   state.cinemaActive = true;
   el.cinemaOverlay.classList.remove("hidden");
-  showMessage("Modo cinema aberto. O player principal continua a controlar a música.", "info");
+
+  const mount = document.getElementById("cinemaVideoMount");
+  if (mount && playerNode.parentElement !== mount) {
+    mount.innerHTML = "";
+    mount.appendChild(playerNode);
+  }
+
+  el.videoPlaceholder.style.display = "grid";
+  el.videoPlaceholder.textContent = "Cinema";
+
+  const track = state.queue[state.queueIndex];
+  const candidate = state.currentCandidates[state.candidateIndex];
+
+  el.cinemaTitle.textContent = track?.trackName || "Modo cinema";
+  el.cinemaSubtitle.textContent = candidate
+    ? `${candidate.title} · ${candidate.channelTitle}`
+    : "O vídeo aparece aqui quando a música estiver carregada.";
+
+  // Força resize visual do iframe depois de mover o elemento.
+  setTimeout(() => {
+    try {
+      const iframe = playerNode.querySelector("iframe");
+      if (iframe) {
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+      }
+    } catch {}
+  }, 150);
 }
 
 function closeCinema() {
+  const playerNode = document.getElementById("youtube-player");
+
   state.cinemaActive = false;
   el.cinemaOverlay.classList.add("hidden");
+
+  if (playerNode && el.videoHome && playerNode.parentElement !== el.videoHome) {
+    el.videoHome.insertBefore(playerNode, el.videoPlaceholder);
+  }
+
+  if (state.currentCandidates.length) {
+    el.videoPlaceholder.style.display = "none";
+  } else {
+    el.videoPlaceholder.style.display = "grid";
+    el.videoPlaceholder.textContent = "YouTube";
+  }
+
+  // Repõe tamanho pequeno do rodapé.
+  setTimeout(() => {
+    try {
+      const iframe = playerNode?.querySelector("iframe");
+      if (iframe) {
+        iframe.style.width = "";
+        iframe.style.height = "";
+      }
+    } catch {}
+  }, 150);
 }
 
 function handleHotkeys(event) {

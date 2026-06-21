@@ -1139,7 +1139,9 @@ h2 {
 }
 
 #cinemaVideoMount {
+  width: 100%;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
   border-radius: 22px;
   background:
     radial-gradient(circle at center, rgba(245,199,107,0.14), transparent 65%),
@@ -1258,4 +1260,15 @@ h2 {
   h1 {
     letter-spacing: -0.065em;
   }
+}
+
+
+/* Correção: no modo cinema o próprio player do YouTube é movido para aqui. */
+#cinemaVideoMount #youtube-player,
+#cinemaVideoMount #youtube-player iframe {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  border: 0;
+  border-radius: 22px;
 }
