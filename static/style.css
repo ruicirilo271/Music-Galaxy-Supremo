@@ -1139,13 +1139,7 @@ h2 {
 }
 
 #cinemaVideoMount {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 22px;
-  background:
-    radial-gradient(circle at center, rgba(245,199,107,0.14), transparent 65%),
-    #050507;
+  display: none;
 }
 
 @media (max-width: 1180px) {
@@ -1263,12 +1257,91 @@ h2 {
 }
 
 
-/* Correção: no modo cinema o próprio player do YouTube é movido para aqui. */
-#cinemaVideoMount #youtube-player,
-#cinemaVideoMount #youtube-player iframe {
+
+
+/* Modo Cinema estável:
+   não move o iframe do YouTube no DOM; apenas amplia o mesmo player com CSS.
+   Isto evita o erro "An error occurred. Please try again later. Playback ID..." */
+body.cinema-mode {
+  overflow: hidden;
+}
+
+body.cinema-mode .cinema-overlay {
+  display: grid !important;
+  pointer-events: auto;
+}
+
+body.cinema-mode .cinema-card {
+  width: min(1180px, calc(100vw - 32px));
+  min-height: min(820px, calc(100vh - 80px));
+  padding-top: min(58vw, 680px);
+  position: relative;
+}
+
+body.cinema-mode .video-shell {
+  position: fixed;
+  z-index: 80;
+  left: 50%;
+  top: 48%;
+  width: min(1120px, calc(100vw - 48px)) !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%);
+  border-radius: 26px;
+  box-shadow: 0 40px 160px rgba(0, 0, 0, 0.72);
+  background: #050507;
+}
+
+body.cinema-mode #youtube-player,
+body.cinema-mode #youtube-player iframe {
   width: 100% !important;
   height: 100% !important;
-  display: block;
-  border: 0;
-  border-radius: 22px;
+  border-radius: 26px;
+}
+
+body.cinema-mode .video-placeholder {
+  border-radius: 26px;
+}
+
+body.cinema-mode .footer-player {
+  z-index: 81;
+  pointer-events: none;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+body.cinema-mode .footer-player > *:not(.video-shell) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.cinema-mode .cinema-info {
+  position: relative;
+  z-index: 82;
+  margin-top: 18px;
+  text-align: center;
+}
+
+body.cinema-mode .cinema-close {
+  z-index: 90;
+}
+
+@media (max-width: 780px) {
+  body.cinema-mode .cinema-card {
+    padding-top: min(65vw, 360px);
+  }
+
+  body.cinema-mode .video-shell {
+    width: calc(100vw - 20px) !important;
+    top: 45%;
+    border-radius: 18px;
+  }
+
+  body.cinema-mode #youtube-player,
+  body.cinema-mode #youtube-player iframe,
+  body.cinema-mode .video-placeholder {
+    border-radius: 18px;
+  }
 }

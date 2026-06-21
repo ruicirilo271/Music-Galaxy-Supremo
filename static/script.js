@@ -512,15 +512,6 @@ function loadCurrentCandidate() {
   el.cinemaTitle.textContent = state.queue[state.queueIndex]?.trackName || candidate.title;
   el.cinemaSubtitle.textContent = `${candidate.title} · ${candidate.channelTitle}`;
 
-  if (state.cinemaActive) {
-    const playerNode = document.getElementById("youtube-player");
-    const mount = document.getElementById("cinemaVideoMount");
-    if (playerNode && mount && playerNode.parentElement !== mount) {
-      mount.innerHTML = "";
-      mount.appendChild(playerNode);
-    }
-  }
-
   if (state.youtubeReady && state.youtubePlayer?.loadVideoById) {
     state.youtubePlayer.loadVideoById(candidate.videoId);
     state.youtubePlayer.setVolume(Number(el.volumeRange.value || 85));
@@ -1057,9 +1048,7 @@ function renderVideosDrawer() {
 }
 
 function openCinema() {
-  const playerNode = document.getElementById("youtube-player");
-
-  if (!playerNode || !state.youtubeReady) {
+  if (!state.youtubeReady || !state.youtubePlayer) {
     showMessage("O player ainda não está pronto. Escolhe primeiro uma música.", "warn");
     return;
   }
@@ -1070,16 +1059,8 @@ function openCinema() {
   }
 
   state.cinemaActive = true;
+  document.body.classList.add("cinema-mode");
   el.cinemaOverlay.classList.remove("hidden");
-
-  const mount = document.getElementById("cinemaVideoMount");
-  if (mount && playerNode.parentElement !== mount) {
-    mount.innerHTML = "";
-    mount.appendChild(playerNode);
-  }
-
-  el.videoPlaceholder.style.display = "grid";
-  el.videoPlaceholder.textContent = "Cinema";
 
   const track = state.queue[state.queueIndex];
   const candidate = state.currentCandidates[state.candidateIndex];
@@ -1087,47 +1068,23 @@ function openCinema() {
   el.cinemaTitle.textContent = track?.trackName || "Modo cinema";
   el.cinemaSubtitle.textContent = candidate
     ? `${candidate.title} · ${candidate.channelTitle}`
-    : "O vídeo aparece aqui quando a música estiver carregada.";
+    : "O vídeo está ampliado no modo cinema.";
 
-  // Força resize visual do iframe depois de mover o elemento.
-  setTimeout(() => {
-    try {
-      const iframe = playerNode.querySelector("iframe");
-      if (iframe) {
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-      }
-    } catch {}
-  }, 150);
+  // Muito importante:
+  // Não movemos o iframe do YouTube no DOM, porque isso pode causar:
+  // "An error occurred. Please try again later. Playback ID..."
+  // Em vez disso, ampliamos visualmente o mesmo .video-shell com CSS.
+  try {
+    if (state.youtubePlayer.playVideo && !state.isPlaying) {
+      state.youtubePlayer.playVideo();
+    }
+  } catch {}
 }
 
 function closeCinema() {
-  const playerNode = document.getElementById("youtube-player");
-
   state.cinemaActive = false;
+  document.body.classList.remove("cinema-mode");
   el.cinemaOverlay.classList.add("hidden");
-
-  if (playerNode && el.videoHome && playerNode.parentElement !== el.videoHome) {
-    el.videoHome.insertBefore(playerNode, el.videoPlaceholder);
-  }
-
-  if (state.currentCandidates.length) {
-    el.videoPlaceholder.style.display = "none";
-  } else {
-    el.videoPlaceholder.style.display = "grid";
-    el.videoPlaceholder.textContent = "YouTube";
-  }
-
-  // Repõe tamanho pequeno do rodapé.
-  setTimeout(() => {
-    try {
-      const iframe = playerNode?.querySelector("iframe");
-      if (iframe) {
-        iframe.style.width = "";
-        iframe.style.height = "";
-      }
-    } catch {}
-  }, 150);
 }
 
 function handleHotkeys(event) {
