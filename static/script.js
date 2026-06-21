@@ -673,6 +673,38 @@ function addSelectedTracksToPlaylist() {
   checked.forEach((input) => (input.checked = false));
 }
 
+function copyTrackToPlaylist(track, sourcePlaylistName = "") {
+  const existingNames = Object.keys(state.playlists).filter((name) => name !== sourcePlaylistName);
+  const existingText = existingNames.length ? existingNames.join(", ") : "nenhuma";
+
+  const targetName = prompt(
+    `Copiar para que playlist?\n\nPlaylists existentes: ${existingText}\n\nPodes escrever um nome novo para criar playlist.`
+  );
+
+  const cleanName = (targetName || "").trim();
+  if (!cleanName) return;
+
+  if (!state.playlists[cleanName]) {
+    state.playlists[cleanName] = [];
+  }
+
+  const playlist = state.playlists[cleanName];
+  const item = { ...track, uid: makeTrackUid(track) };
+  const exists = playlist.some((saved) => makeTrackUid(saved) === item.uid);
+
+  if (exists) {
+    showMessage(`Essa música já existe na playlist “${cleanName}”.`, "warn");
+  } else {
+    playlist.push(item);
+    showMessage(`Música copiada para “${cleanName}”.`, "success");
+  }
+
+  state.activePlaylistName = cleanName;
+  saveJson(LS.playlists, state.playlists);
+  renderPlaylists();
+  updateStats();
+}
+
 function addTracksToActivePlaylist(tracks) {
   if (!tracks.length) return;
 
@@ -755,11 +787,13 @@ function renderActivePlaylist() {
         tracks.length
           ? tracks.map((track, index) => `
             <div class="playlist-track">
-              <button class="playlist-track-main" data-index="${index}">
+              <button class="playlist-track-main" data-index="${index}" title="Ouvir esta música">
                 <strong>${escapeHtml(track.trackName)}</strong>
                 <small>${escapeHtml(track.artistName)} · ${escapeHtml(track.collectionName || "")}</small>
               </button>
-              <button class="remove-track" data-index="${index}">×</button>
+              <button class="playlist-fav" data-index="${index}" title="Adicionar/remover favorito">${isFavorite(track) ? "★" : "☆"}</button>
+              <button class="playlist-copy" data-index="${index}" title="Copiar para outra playlist">＋</button>
+              <button class="remove-track" data-index="${index}" title="Remover desta playlist">×</button>
             </div>
           `).join("")
           : `<p class="mini-empty">Playlist vazia.</p>`
@@ -795,6 +829,25 @@ function renderActivePlaylist() {
       const index = Number(btn.dataset.index);
       setQueue(tracks, index);
       playQueueIndex(index);
+    });
+  });
+
+  el.activePlaylistPanel.querySelectorAll(".playlist-fav").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      const track = state.playlists[name][index];
+      if (!track) return;
+      toggleFavorite(track);
+      renderPlaylists();
+    });
+  });
+
+  el.activePlaylistPanel.querySelectorAll(".playlist-copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      const track = state.playlists[name][index];
+      if (!track) return;
+      copyTrackToPlaylist(track, name);
     });
   });
 
@@ -902,10 +955,12 @@ function renderLibrary() {
     <div class="library-list">
       ${list.map((track, index) => `
         <div class="library-track">
-          <button class="library-main" data-index="${index}">
+          <button class="library-main" data-index="${index}" title="Ouvir esta música">
             <strong>${escapeHtml(track.trackName)}</strong>
             <small>${escapeHtml(track.artistName)} · ${escapeHtml(track.collectionName || "")}</small>
           </button>
+          <button class="library-fav" data-index="${index}" title="Adicionar/remover favorito">${isFavorite(track) ? "★" : "☆"}</button>
+          <button class="library-copy" data-index="${index}" title="Copiar para playlist">＋</button>
         </div>
       `).join("")}
     </div>
@@ -935,6 +990,25 @@ function renderLibrary() {
       const index = Number(btn.dataset.index);
       setQueue(list, index);
       playQueueIndex(index);
+    });
+  });
+
+  el.libraryPanel.querySelectorAll(".library-fav").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      const track = list[index];
+      if (!track) return;
+      toggleFavorite(track);
+      renderLibrary();
+    });
+  });
+
+  el.libraryPanel.querySelectorAll(".library-copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      const track = list[index];
+      if (!track) return;
+      copyTrackToPlaylist(track, "");
     });
   });
 }
