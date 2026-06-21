@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iTunes + YouTube Super Deus Supremo</title>
+  <meta name="theme-color" content="#08070b" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+  <div class="bg-orb orb-c"></div>
+
+  <main class="app-shell">
+    <header class="hero glass">
+      <div class="hero-copy">
+        <p class="eyebrow">iTunes Albums · YouTube API · Player Supremo</p>
+        <h1>Music Galaxy <span>Supremo</span></h1>
+        <p class="hero-text">
+          Pesquisa artistas, abre álbuns do iTunes, toca músicas pelo YouTube, cria playlists, guarda favoritos, histórico e fila inteligente.
+        </p>
+
+        <div class="hero-stats">
+          <div><strong id="statPlaylists">0</strong><span>Playlists</span></div>
+          <div><strong id="statFavorites">0</strong><span>Favoritos</span></div>
+          <div><strong id="statHistory">0</strong><span>Histórico</span></div>
+        </div>
+      </div>
+
+      <section class="search-card">
+        <form id="artistForm">
+          <label for="artistInput">Pesquisar artista</label>
+          <div class="search-row">
+            <input id="artistInput" type="search" placeholder="Adele, The Weeknd, Daft Punk..." autocomplete="off" />
+            <button type="submit">Pesquisar</button>
+          </div>
+        </form>
+
+        <div class="quick-row">
+          <button class="quick-artist" data-artist="Adele">Adele</button>
+          <button class="quick-artist" data-artist="Rihanna">Rihanna</button>
+          <button class="quick-artist" data-artist="Coldplay">Coldplay</button>
+          <button class="quick-artist" data-artist="Linkin Park">Linkin Park</button>
+        </div>
+
+        <div class="status-line">
+          <span id="healthDot" class="dot"></span>
+          <small id="healthText">A verificar backend...</small>
+        </div>
+      </section>
+    </header>
+
+    <section id="messageBox" class="message-box hidden"></section>
+
+    <section class="main-grid">
+      <aside class="sidebar glass">
+        <div class="side-block">
+          <div class="section-title">
+            <p class="eyebrow">Biblioteca</p>
+            <h2>Playlists</h2>
+          </div>
+          <button id="newPlaylistBtn" class="gold-btn small">+ Nova</button>
+        </div>
+
+        <div id="playlistSelector" class="pill-list"></div>
+        <div id="activePlaylistPanel" class="playlist-panel"></div>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="favorites">Favoritos</button>
+          <button class="tab" data-tab="history">Histórico</button>
+        </div>
+        <div id="libraryPanel" class="library-panel"></div>
+      </aside>
+
+      <section class="content-grid">
+        <section class="panel glass">
+          <div class="section-title-row">
+            <div class="section-title">
+              <p class="eyebrow">Passo 1</p>
+              <h2>Artistas</h2>
+            </div>
+            <span id="artistsCount" class="count-badge">0</span>
+          </div>
+          <div id="artistsGrid" class="artists-grid"></div>
+        </section>
+
+        <section class="panel glass">
+          <div class="section-title-row">
+            <div class="section-title">
+              <p class="eyebrow">Passo 2</p>
+              <h2 id="albumsTitle">Álbuns</h2>
+            </div>
+            <div class="filter-row">
+              <input id="albumFilter" type="search" placeholder="Filtrar álbuns..." disabled />
+              <select id="albumSort" disabled>
+                <option value="newest">Mais recentes</option>
+                <option value="oldest">Mais antigos</option>
+                <option value="az">A-Z</option>
+                <option value="tracks">Mais faixas</option>
+              </select>
+            </div>
+          </div>
+          <div id="albumsGrid" class="albums-grid"></div>
+        </section>
+
+        <section class="panel glass tracks-panel">
+          <div class="section-title-row sticky-actions">
+            <div class="section-title">
+              <p class="eyebrow">Passo 3</p>
+              <h2 id="tracksTitle">Músicas</h2>
+            </div>
+
+            <div class="track-actions">
+              <input id="trackFilter" type="search" placeholder="Filtrar músicas..." disabled />
+              <button id="playAlbumBtn" class="gold-btn" disabled>Ouvir todas</button>
+              <button id="shuffleAlbumBtn" class="ghost-btn" disabled>Shuffle</button>
+              <button id="addSelectedBtn" class="ghost-btn" disabled>Adicionar selecionadas</button>
+            </div>
+          </div>
+
+          <div id="albumInfo" class="album-info hidden"></div>
+          <div id="tracksList" class="tracks-list"></div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <aside id="rightDrawer" class="right-drawer glass">
+    <div class="drawer-head">
+      <div>
+        <p class="eyebrow">Supremo</p>
+        <h2 id="drawerTitle">Fila</h2>
+      </div>
+      <button id="closeDrawerBtn" class="round ghost">×</button>
+    </div>
+    <div class="drawer-tabs">
+      <button class="drawer-tab active" data-drawer="queue">Fila</button>
+      <button class="drawer-tab" data-drawer="lyrics">Letra</button>
+      <button class="drawer-tab" data-drawer="videos">Vídeos</button>
+    </div>
+    <div id="drawerContent" class="drawer-content"></div>
+  </aside>
+
+  <footer id="footerPlayer" class="footer-player glass">
+    <div class="visualizer">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="video-shell">
+      <div id="youtube-player"></div>
+      <div id="videoPlaceholder" class="video-placeholder">YouTube</div>
+    </div>
+
+    <div class="now-area">
+      <p class="eyebrow">A tocar agora</p>
+      <h3 id="nowTitle">Escolhe uma música</h3>
+      <p id="nowArtist">O player fica fixo no rodapé.</p>
+      <p id="nowYoutube" class="youtube-source"></p>
+
+      <div class="progress-shell" id="seekBar">
+        <div id="progressFill"></div>
+      </div>
+      <div class="time-row">
+        <span id="currentTime">0:00</span>
+        <span id="durationTime">0:00</span>
+      </div>
+    </div>
+
+    <div class="control-stack">
+      <div class="player-controls">
+        <button id="prevBtn" class="round">⏮</button>
+        <button id="toggleBtn" class="round play">▶</button>
+        <button id="nextBtn" class="round">⏭</button>
+      </div>
+      <div class="mini-controls">
+        <button id="repeatBtn" class="chip">Repeat off</button>
+        <button id="queueBtn" class="chip">Fila</button>
+        <button id="cinemaBtn" class="chip">Cinema</button>
+      </div>
+    </div>
+
+    <div class="volume-box">
+      <span>Volume</span>
+      <input id="volumeRange" type="range" min="0" max="100" value="85" />
+      <strong id="queuePosition">—</strong>
+    </div>
+  </footer>
+
+  <div id="cinemaOverlay" class="cinema-overlay hidden">
+    <button id="closeCinemaBtn" class="cinema-close">×</button>
+    <div class="cinema-card glass">
+      <div id="cinemaVideoMount"></div>
+      <div class="cinema-info">
+        <h2 id="cinemaTitle">Cinema mode</h2>
+        <p id="cinemaSubtitle"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
